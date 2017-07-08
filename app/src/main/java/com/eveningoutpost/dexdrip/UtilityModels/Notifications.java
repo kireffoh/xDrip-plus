@@ -677,7 +677,7 @@ public class Notifications extends IntentService {
     }
 
     private void evaluateLowPredictionAlarm() {
-
+		Calendar calendar = Calendar.getInstance();
         if (!prefs.getBoolean("predict_lows_alarm", false)) return;
 
 
@@ -690,9 +690,10 @@ public class Notifications extends IntentService {
             final double low_predicted_alarm_minutes = Double.parseDouble(prefs.getString("low_predict_alarm_level", "40"));
             final double now = JoH.ts();
             final double predicted_low_in_mins = (low_occurs_at - now) / 60000;
-            android.util.Log.d(TAG, "evaluateLowPredictionAlarm: mins: " + predicted_low_in_mins);
-            if (predicted_low_in_mins > 1) {
-                if (predicted_low_in_mins < low_predicted_alarm_minutes) {
+            
+			android.util.Log.d(TAG, "evaluateLowPredictionAlarm: mins: " + predicted_low_in_mins);
+            if (predicted_low_in_mins > 1)  {
+                if ((predicted_low_in_mins < low_predicted_alarm_minutes)  && (calendar.get(Calendar.HOUR_OF_DAY) > 8)  && (calendar.get(Calendar.HOUR_OF_DAY) < 23)) {
                     Notifications.lowPredictAlert(xdrip.getAppContext(), true, getString(R.string.low_predicted)
                             +" "+getString(R.string.in)+" " + (int) predicted_low_in_mins + getString(R.string.space_mins));
                     low_notifying = true;
@@ -824,7 +825,8 @@ public class Notifications extends IntentService {
 
     public static void persistentHighAlert(Context context, boolean on, String msg) {
         final String type = "persistent_high_alert";
-        if (on) {
+        Calendar calendar = Calendar.getInstance();
+        if (on && (calendar.get(Calendar.HOUR_OF_DAY) > 8) && (calendar.get(Calendar.HOUR_OF_DAY) < 23)) {
             if ((Home.getPreferencesLong("alerts_disabled_until", 0) < JoH.tsl()) && (Home.getPreferencesLong("high_alerts_disabled_until", 0) < JoH.tsl())) {
                 int snooze_time = 20;
                 try {
@@ -846,7 +848,8 @@ public class Notifications extends IntentService {
     }
 
     public static void RiseDropAlert(Context context, boolean on, String type, String message, int notificatioId) {
-        if(on) {
+        Calendar calendar = Calendar.getInstance();
+        if(on && (calendar.get(Calendar.HOUR_OF_DAY) > 8) && (calendar.get(Calendar.HOUR_OF_DAY) < 23)) {
          // This alerts will only happen once. Want to have maxint, but not create overflow.
             OtherAlert(context, type, message, notificatioId, false, Integer.MAX_VALUE / 100000);
         } else {

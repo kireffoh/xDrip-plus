@@ -58,7 +58,7 @@ import java.util.List;
  * Created by Emma Black on 11/28/14.
  */
 public class Notifications extends IntentService {
-    public static final long[] vibratePattern = {0, 1000, 300, 1000, 300, 1000};
+    public static final long[] vibratePattern = {900, 1000, 300, 1000, 300, 1000};
     public static boolean bg_notifications;
     public static boolean bg_persistent_high_alert_enabled;
     public static boolean bg_ongoing;
@@ -165,7 +165,7 @@ public class Notifications extends IntentService {
         bg_notifications = prefs.getBoolean("bg_notifications", false);
         bg_persistent_high_alert_enabled = prefs.getBoolean("persistent_high_alert_enabled", false);
         bg_vibrate = prefs.getBoolean("bg_vibrate", true);
-        bg_lights = prefs.getBoolean("bg_lights", false);//KS true
+        bg_lights = prefs.getBoolean("bg_lights", true);//KS true
         bg_sound = prefs.getBoolean("bg_play_sound", false);//KS true
         bg_notification_sound = prefs.getString("bg_notification_sound", "content://settings/system/notification_sound");
         bg_sound_in_silent = prefs.getBoolean("bg_sound_in_silent", false);
@@ -336,7 +336,7 @@ public class Notifications extends IntentService {
         }
         // TODO: Add this alerts as well to depend on unclear sensor reading.
         BgReading.checkForPersistentHigh();
-        //KS evaluateLowPredictionAlarm();
+       //ESH: requires prediction numbers from wear: BgGraphing evaluateLowPredictionAlarm();
         //KS reportNoiseChanges();
 
 
@@ -669,7 +669,7 @@ public class Notifications extends IntentService {
     }
 
     private void evaluateLowPredictionAlarm() {//KS TODO in wear BgGraphBuilder
-
+        Calendar calendar = Calendar.getInstance();
         if (!prefs.getBoolean("predict_lows_alarm", false)) return;
 
 
@@ -684,7 +684,7 @@ public class Notifications extends IntentService {
             final double predicted_low_in_mins = (low_occurs_at - now) / 60000;
             android.util.Log.d(TAG, "evaluateLowPredictionAlarm: mins: " + predicted_low_in_mins);
             if (predicted_low_in_mins > 1) {
-                if (predicted_low_in_mins < low_predicted_alarm_minutes) {
+                if ((predicted_low_in_mins < low_predicted_alarm_minutes)  && (calendar.get(Calendar.HOUR_OF_DAY) > 8)  && (calendar.get(Calendar.HOUR_OF_DAY) < 23)) {
                     Notifications.lowPredictAlert(xdrip.getAppContext(), true,
                             getResources().getString(R.string.notify_low_predicted_in_n_mins, (int) predicted_low_in_mins));
                     low_notifying = true;
